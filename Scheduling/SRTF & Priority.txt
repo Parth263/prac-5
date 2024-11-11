@@ -1,0 +1,144 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Process {
+    int pid;
+    int arrivalTime;
+    int burstTime;
+    int remainingTime;
+    int priority;
+    int completionTime;
+    int waitingTime;
+    int turnaroundTime;
+
+    public Process(int pid, int arrivalTime, int burstTime, int priority) {
+        this.pid = pid;
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
+        this.remainingTime = burstTime;
+        this.priority = priority;
+        this.completionTime = 0;
+        this.waitingTime = 0;
+        this.turnaroundTime = 0;
+    }
+}
+
+public class srtfps2 {
+    public static void sjfPreemptive(ArrayList<Process> processes) {
+        int time = 0;
+        int completed = 0;
+        int n = processes.size();
+
+        while (completed != n) {
+            Process currentProcess = null;
+            int minRemainingTime = Integer.MAX_VALUE;
+
+            for (Process process : processes) {
+                if (process.arrivalTime <= time && process.remainingTime > 0 && process.remainingTime < minRemainingTime) {
+                    minRemainingTime = process.remainingTime;
+                    currentProcess = process;
+                }
+            }
+
+            if (currentProcess != null) {
+                currentProcess.remainingTime--;
+                time++;
+
+                if (currentProcess.remainingTime == 0) {
+                    currentProcess.completionTime = time;
+                    currentProcess.turnaroundTime = currentProcess.completionTime - currentProcess.arrivalTime;
+                    currentProcess.waitingTime = currentProcess.turnaroundTime - currentProcess.burstTime;
+                    completed++;
+                }
+            } else {
+                time++;
+            }
+        }
+
+        System.out.println("\nSJF (Preemptive) Scheduling Results:");
+        printResults(processes);
+    }
+
+    public static void priorityNonPreemptive(ArrayList<Process> processes) {
+        int time = 0;
+        int completed = 0;
+        int n = processes.size();
+
+        while (completed != n) {
+            Process highestPriorityProcess = null;
+            int highestPriority = Integer.MIN_VALUE; // Changed to handle higher numbers as higher priority
+
+            for (Process process : processes) {
+                if (process.arrivalTime <= time && process.remainingTime > 0 && process.priority > highestPriority) {
+                    highestPriority = process.priority;
+                    highestPriorityProcess = process;
+                }
+            }
+
+            if (highestPriorityProcess != null) {
+                time += highestPriorityProcess.burstTime;
+                highestPriorityProcess.completionTime = time;
+                highestPriorityProcess.turnaroundTime = highestPriorityProcess.completionTime - highestPriorityProcess.arrivalTime;
+                highestPriorityProcess.waitingTime = highestPriorityProcess.turnaroundTime - highestPriorityProcess.burstTime;
+                highestPriorityProcess.remainingTime = 0;
+                completed++;
+            } else {
+                time++;
+            }
+        }
+
+        System.out.println("\nPriority (Non-Preemptive) Scheduling Results:");
+        printResults(processes);
+    }
+
+    public static void printResults(ArrayList<Process> processes) {
+        System.out.println("PID\tArrival\tBurst\tPriority\tCompletion\tWaiting\tTurnaround");
+        for (Process p : processes) {
+            System.out.printf("%d\t%d\t%d\t%d\t\t%d\t\t%d\t%d\n",
+                    p.pid, p.arrivalTime, p.burstTime, p.priority, p.completionTime, p.waitingTime, p.turnaroundTime);
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        ArrayList<Process> processes = new ArrayList<>();
+
+        System.out.print("Enter the number of processes: ");
+        int n = sc.nextInt();
+
+        for (int i = 0; i < n; i++) {
+            System.out.println("Enter details for Process " + (i + 1) + ":");
+            System.out.print("PID: ");
+            int pid = sc.nextInt();
+            System.out.print("Arrival Time: ");
+            int arrivalTime = sc.nextInt();
+            System.out.print("Burst Time: ");
+            int burstTime = sc.nextInt();
+            System.out.print("Priority (higher number = higher priority): ");
+            int priority = sc.nextInt();
+            processes.add(new Process(pid, arrivalTime, burstTime, priority));
+        }
+
+        while (true) {
+            System.out.println("\nChoose Scheduling Algorithm:");
+            System.out.println("1. SJF (Preemptive)");
+            System.out.println("2. Priority (Non-Preemptive)");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+            int choice = sc.nextInt();
+
+            if (choice == 1) {
+                sjfPreemptive(new ArrayList<>(processes));  // Pass a copy to preserve original data for next use
+            } else if (choice == 2) {
+                priorityNonPreemptive(new ArrayList<>(processes));  // Pass a copy to preserve original data
+            } else if (choice == 3) {
+                System.out.println("Exiting program.");
+                break;
+            } else {
+                System.out.println("Invalid choice. Please try again.");
+            }
+        }
+
+        sc.close();
+    }
+}

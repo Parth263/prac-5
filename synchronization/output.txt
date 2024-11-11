@@ -1,0 +1,73 @@
+Let me explain how this Readers-Writers synchronization code works and its output pattern:
+
+This code implements a solution to the Readers-Writers problem where:
+- Multiple readers can read simultaneously
+- Only one writer can write at a time
+- When a writer is writing, no reader can read
+
+Let's break down the synchronization mechanism and expected output:
+
+1. **Synchronization Mechanism**:
+   - `mutex`: Controls access to `readCount` variable
+   - `wrt`: Controls exclusive access for writers
+   - `readCount`: Keeps track of active readers
+
+2. **When a Reader thread executes**:
+```java
+mutex.acquire();
+readCount++;
+if (readCount == 1) {  // First reader
+    wrt.acquire();     // Block writers
+}
+mutex.release();
+// Reading happens here
+mutex.acquire();
+readCount--;
+if (readCount == 0) {  // Last reader
+    wrt.release();     // Allow writers
+}
+mutex.release();
+```
+
+3. **When a Writer thread executes**:
+```java
+wrt.acquire();         // Get exclusive access
+// Writing happens here
+wrt.release();         // Release exclusive access
+```
+
+4. **Sample Output** (for 3 readers and 2 writers):
+```
+Enter the number of Readers: 3
+Enter the number of Writers: 2
+
+Thread Reader1 is READING: Hello
+Thread Reader2 is READING: Hello
+Thread Reader3 is READING: Hello
+Thread Reader1 has FINISHED READING
+Thread Reader2 has FINISHED READING
+Thread Reader3 has FINISHED READING
+Thread Writer1 is WRITING: Good Morning
+Thread Writer1 has finished WRITING
+Thread Writer2 is WRITING: Good Morning
+Thread Writer2 has finished WRITING
+```
+
+Key output characteristics:
+1. Multiple readers can read simultaneously (you'll see consecutive read operations)
+2. Writers must wait for all readers to finish
+3. Only one writer can write at a time
+4. When a writer is writing, no reader can read
+5. Each read/write operation takes 1.5 seconds (Thread.sleep(1500))
+
+The output sequence may vary due to thread scheduling, but these rules are always maintained:
+- You'll never see a writer writing while another writer is writing
+- You'll never see a writer writing while readers are reading
+- You can see multiple readers reading simultaneously
+- The message starts as "Hello" and gets changed to "Good Morning" by writers
+
+This implementation favors readers over writers because:
+- If there's continuous reader activity, writers might starve
+- Once one reader has acquired access, other readers can join even if a writer is waiting
+
+Would you like me to explain any specific part of the synchronization mechanism or output pattern in more detail?
