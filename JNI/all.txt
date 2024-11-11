@@ -1,0 +1,159 @@
+Here's the complete code for all operations (addition, subtraction, square, and multiplication) using JNI:
+
+1. **Create JNI.java**:
+```java
+public class JNI {
+    static {
+        System.loadLibrary("native");
+    }
+
+    public static void main(String[] args) {
+        JNI calculator = new JNI();
+        
+        // Test Addition
+        int num1 = 10, num2 = 20;
+        System.out.println("Addition of " + num1 + " and " + num2 + " is: " + calculator.add(num1, num2));
+        
+        // Test Subtraction
+        System.out.println("Subtraction of " + num1 + " and " + num2 + " is: " + calculator.subtract(num1, num2));
+        
+        // Test Square
+        System.out.println("Square of " + num1 + " is: " + calculator.square(num1));
+        
+        // Test Multiplication
+        System.out.println("Multiplication of " + num1 + " and " + num2 + " is: " + calculator.multiply(num1, num2));
+    }
+
+    // Native method declarations
+    private native int add(int n1, int n2);
+    private native int subtract(int n1, int n2);
+    private native int square(int n1);
+    private native int multiply(int n1, int n2);
+}
+```
+
+2. **Create JNI.c**:
+```c
+#include <jni.h>
+#include <stdio.h>
+
+// Addition operation
+JNIEXPORT jint JNICALL Java_JNI_add
+  (JNIEnv *env, jobject thisobj, jint n1, jint n2) {
+    printf("Performing addition in C...\n");
+    jint res = n1 + n2;
+    return res;
+}
+
+// Subtraction operation
+JNIEXPORT jint JNICALL Java_JNI_subtract
+  (JNIEnv *env, jobject thisobj, jint n1, jint n2) {
+    printf("Performing subtraction in C...\n");
+    jint res = n1 - n2;
+    return res;
+}
+
+// Square operation
+JNIEXPORT jint JNICALL Java_JNI_square
+  (JNIEnv *env, jobject thisobj, jint n1) {
+    printf("Calculating square in C...\n");
+    jint res = n1 * n1;
+    return res;
+}
+
+// Multiplication operation
+JNIEXPORT jint JNICALL Java_JNI_multiply
+  (JNIEnv *env, jobject thisobj, jint n1, jint n2) {
+    printf("Performing multiplication in C...\n");
+    jint res = n1 * n2;
+    return res;
+}
+```
+
+3. **Execution Steps**:
+```bash
+# 1. Create directory and navigate to it
+mkdir JNIProject
+cd JNIProject
+
+# 2. Create the Java file
+nano JNI.java
+# (copy Java code and save)
+
+# 3. Create the C file
+nano JNI.c
+# (copy C code and save)
+
+# 4. Make sure required packages are installed
+sudo apt-get update
+sudo apt-get install default-jdk build-essential
+
+# 5. Set JAVA_HOME
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+# 6. Compile Java file
+javac -h . JNI.java
+
+# 7. Compile C file
+gcc -c -fPIC -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" JNI.c -o JNI.o
+
+# 8. Create shared library
+gcc -shared -fPIC -o libnative.so JNI.o
+
+# 9. Set library path
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+
+# 10. Make library executable
+chmod +x libnative.so
+
+# 11. Run the program
+java -Djava.library.path=. JNI
+```
+
+4. **One-line compilation command**:
+```bash
+javac -h . JNI.java && \
+gcc -c -fPIC -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" JNI.c -o JNI.o && \
+gcc -shared -fPIC -o libnative.so JNI.o && \
+chmod +x libnative.so && \
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH && \
+java -Djava.library.path=. JNI
+```
+
+5. **Expected Output**:
+```
+Performing addition in C...
+Addition of 10 and 20 is: 30
+Performing subtraction in C...
+Subtraction of 10 and 20 is: -10
+Calculating square in C...
+Square of 10 is: 100
+Performing multiplication in C...
+Multiplication of 10 and 20 is: 200
+```
+
+6. **To Test Individual Operations**:
+You can modify the main method to test specific operations:
+
+```java
+// For testing only addition:
+System.out.println("Addition test: " + calculator.add(10, 20));
+
+// For testing only subtraction:
+System.out.println("Subtraction test: " + calculator.subtract(10, 20));
+
+// For testing only square:
+System.out.println("Square test: " + calculator.square(10));
+
+// For testing only multiplication:
+System.out.println("Multiplication test: " + calculator.multiply(10, 20));
+```
+
+Remember:
+- Keep all files in the same directory
+- Make sure JDK and GCC are installed
+- Set JAVA_HOME correctly
+- Execute commands in the given order
+- If you get any errors, check file permissions and installations
+
+Let me know if you need any clarification or help with specific operations!

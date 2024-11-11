@@ -1,0 +1,173 @@
+I'll explain how the JNI code works step by step:
+
+1. **Code Components and Flow**:
+
+```plaintext
+Java Code (JNI.java) →  JNI Layer → C Code (JNI.c)
+    ↓                                    ↓
+Declares methods               Implements methods
+```
+
+2. **Java Code Explanation** (JNI.java):
+```java
+public class JNI {
+    // 1. Load native library when class is initialized
+    static {
+        System.loadLibrary("native");
+    }
+
+    // 2. Main method - entry point
+    public static void main(String[] args) {
+        JNI calculator = new JNI();
+        
+        // 3. Call native methods
+        System.out.println("Addition: " + calculator.add(10, 20));
+        System.out.println("Subtraction: " + calculator.subtract(10, 20));
+        System.out.println("Square: " + calculator.square(10));
+        System.out.println("Multiplication: " + calculator.multiply(10, 20));
+    }
+
+    // 4. Native method declarations
+    private native int add(int n1, int n2);
+    private native int subtract(int n1, int n2);
+    private native int square(int n1);
+    private native int multiply(int n1, int n2);
+}
+```
+
+3. **C Code Explanation** (JNI.c):
+```c
+#include <jni.h>
+#include <stdio.h>
+
+// 1. Addition Implementation
+JNIEXPORT jint JNICALL Java_JNI_add
+  (JNIEnv *env, jobject thisobj, jint n1, jint n2) {
+    printf("Performing addition in C...\n");
+    jint res = n1 + n2;
+    return res;
+}
+
+// Similar implementations for other operations...
+```
+
+4. **How It Works Step by Step**:
+
+```plaintext
+Step 1: Java Class Loading
+- JVM loads JNI.class
+- Static initializer block runs
+- Native library is loaded using System.loadLibrary("native")
+
+Step 2: Method Declaration
+- Java code declares native methods
+- These act as placeholders for C implementations
+
+Step 3: Native Implementation
+- C code provides actual implementation
+- Each C function matches a Java native method
+- Function names follow JNI naming convention
+
+Step 4: Method Calling
+- Java code calls native method
+- JNI handles parameter passing
+- C function executes
+- Result returns to Java
+```
+
+5. **Execution Flow Example** (for addition):
+```plaintext
+1. Java: calculator.add(10, 20)
+   ↓
+2. JNI: Converts parameters
+   ↓
+3. C: Java_JNI_add executes
+   ↓
+4. Result returned to Java
+   ↓
+5. Output displayed
+```
+
+6. **Memory and Data Type Handling**:
+```plaintext
+Java Side:
+int number = 10    →    JNI Layer    →    C Side:
+                                          jint number
+```
+
+7. **Function Naming Convention**:
+```plaintext
+Java method:
+private native int add(int n1, int n2);
+
+Maps to C function:
+Java_JNI_add(JNIEnv *env, jobject thisobj, jint n1, jint n2)
+
+Where:
+- Java_ : Prefix
+- JNI   : Class name
+- add   : Method name
+```
+
+8. **Compilation Process Details**:
+```bash
+# Step 1: Compile Java code
+javac -h . JNI.java
+# Creates:
+# - JNI.class (bytecode)
+# - JNI.h (header file)
+
+# Step 2: Compile C code
+gcc -c -fPIC -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" JNI.c -o JNI.o
+# Creates object file
+
+# Step 3: Create shared library
+gcc -shared -fPIC -o libnative.so JNI.o
+# Creates shared library
+```
+
+9. **Example Execution with Output**:
+```java
+// When you run:
+java -Djava.library.path=. JNI
+
+// Output will be:
+Performing addition in C...
+Addition of 10 and 20 is: 30
+Performing subtraction in C...
+Subtraction of 10 and 20 is: -10
+Calculating square in C...
+Square of 10 is: 100
+Performing multiplication in C...
+Multiplication of 10 and 20 is: 200
+```
+
+10. **Error Handling Example**:
+```java
+// If library not found:
+java.lang.UnsatisfiedLinkError: no native in java.library.path
+
+// Solution:
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+```
+
+11. **Testing Individual Operations**:
+```java
+JNI calc = new JNI();
+
+// Test addition only
+System.out.println(calc.add(5, 3));  // Output: 8
+
+// Test square only
+System.out.println(calc.square(4));  // Output: 16
+```
+
+The key points to remember:
+1. Java declares the methods
+2. C implements them
+3. JNI provides the bridge
+4. Names must match exactly
+5. Data types must be compatible
+6. Library must be loaded properly
+
+Let me know if you need clarification on any part of the process!

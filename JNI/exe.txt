@@ -1,0 +1,58 @@
+# Create a directory and navigate to it
+mkdir JNITest
+cd JNITest
+
+# Create both files using an editor (e.g., nano)
+nano JNI.java
+nano JNI.c
+
+# Step 1: Compile Java file and generate header
+javac -h . JNI.java
+
+# Step 2: Set JAVA_HOME (use your Java path)
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+# Step 3: Compile C file to object file
+gcc -c -fPIC -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" JNI.c -o JNI.o
+
+# Step 4: Create shared library
+gcc -shared -fPIC -o libnative.so JNI.o
+
+# Step 5: Set library path
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+
+# Step 6: Run the program
+java -Djava.library.path=. JNI
+
+
+
+
+# 1. Create directory
+mkdir JNIProject
+cd JNIProject
+
+# 2. Create JNI.java
+nano JNI.java
+# (copy Java code and save)
+
+# 3. Create JNI.c
+nano JNI.c
+# (copy C code and save)
+
+# 4. Set up environment
+sudo apt-get update
+sudo apt-get install default-jdk build-essential
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+# 5. Compile and run
+
+javac -h . JNI.java
+
+gcc -c -fPIC -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" JNI.c -o JNI.o
+
+gcc -shared -fPIC -o libnative.so JNI.o
+chmod +x libnative.so
+
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
+
+java -Djava.library.path=. JNI
